@@ -57,6 +57,37 @@ fn single() {
     tokio::run(execute_all);
 }
 
+fn alt_udp_echo() -> Result<(), Error> {
+    let from = "0.0.0.0:12345".parse()?;
+    let socket = UdpSocket::bind(&from)?;
+    let framed = UdpFramed::new(socket, LinesCodec::new());
+    let (sink, stream) = framed.split();
+    let (tx, rx) = mpsc::channel(16);
+    let rx = rx.map_err(|_| other("Can't take a message"))
+        .fold(sink, |sink, frame| {
+            sink.send(frame)
+        });
+    let process = stream.and_then(move |args| {
+        tx.clone()
+            .send(args)
+            .map(drop)
+            .map_err(other)
+    }).collect();
+
+    let execute_all = future::join_all(vec![
+        to_box(rx),
+        to_box(process),
+    ]).map(drop);
+    Ok(tokio::run(execute_all))
+}
+
+fn other<E>(err: E) -> io::Error
+where E: Into<Box<dyn std::error::Error + Send + Sync>>,
+{
+    io::Error::new(io::ErrorKind::Other, err)
+}
+
+
 fn send_spawn() {
     let (tx_sink, rx_stream) = mpsc::channel::<u8>(8);
     let receiver = rx_stream
