@@ -8,8 +8,8 @@ edition = "2018"
 [dependencies]
 env_logger = "0.6"
 failure = "0.1"
-jsonrpc = { git = "https://github.com/apoelstra/rust-jsonrpc" }
-jsonrpc-http-server = { git = "https://github.com/paritytech/jsonrpc" }
+jsonrpc = { git = "https://github.com/apoelstra/rust-jsonrpc", branch = "2019-04-value-hash" }
+jsonrpc-http-server = { git = "https://github.com/paritytech/jsonrpc", branch = "v15.x"}
 log = "0.4"
 serde = "1.0"
 serde_derive = "1.0"
