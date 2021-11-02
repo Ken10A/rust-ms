@@ -11,7 +11,7 @@ pub struct Remote {
 }
 
 impl Remote {
-    pub fu new(addr: SocketAddr) -> Result<Self, GrpcError> {
+    pub fn new(addr: SocketAddr) -> Result<Self, GrpcError> {
         let host = addr.ip().to_string();
         let port = addr.port();
         let conf = ClientConf::default();
@@ -19,5 +19,17 @@ impl Remote {
         Ok(Self {
             client
         })
+    }
+
+    pub fn start_roll_call(&self) -> Result<Empty, GrpcError> {
+        self.client.start_roll_call(RequestOptions::new(), Empty::new())
+            .wait()
+            .map(|(_, value, _)| value)
+    }
+
+    pub fn mark_itself(&self) -> Result<Empty, GrpcError> {
+        self.client.mark_itself(RequestOptions::new(), Empty::new())
+            .wait()
+            .map(|(_, value, _)| value)
     }
 }
