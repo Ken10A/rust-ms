@@ -47,3 +47,29 @@ impl RingImpl {
         SingleResponse::completed(result)
     }
 }
+
+impl Ring for RingImpl {
+    fn start_roll_call(&self, _: RequestOptions, _: Empty) -> SingleResponse<Empty> {
+        trace!("START_ROLL_CALL");
+        self.send_action(Action::StartRollCall)
+    }
+
+    fn mark_itself(&self, _: RequestOptions, _: Empty) -> SingleResponse<Empty> {
+        trace!("MARK_ITSELF");
+        self.send_action(Action::MarkItself)
+    }
+}
+
+fn main() -> Result<(), Error> {
+    env_logger::init();
+    let (tx, rx) = channel();
+    let addr: SocketAddr = env::var("ADDRESS")?.parse()?;
+    let mut server = ServerBuilder::new_plain();
+    server.http.set_addr(addr)?;
+    let ring = RingImpl::new(tx);
+    server.add_service(RingServer::new_service_def(ring));
+    server.http.set_cpu_pool_threads(4);
+    let _server = server.build()?;
+
+    worker_pool(rx)
+}
