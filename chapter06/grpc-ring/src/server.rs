@@ -73,3 +73,37 @@ fn main() -> Result<(), Error> {
 
     worker_pool(rx)
 }
+
+fn worker_pool(receiver: Receiver<Action>) {
+    let next = env::var("NEXT")?.parse()?;
+    let remote = Remote::new(next)?;
+    let mut in_roll_call = false;
+    for action in receiver.iter() {
+        match action {
+            Action::StartRollCall => {
+                if !in_roll_call {
+                    if remote.start_roll_call().is_ok() {
+                        debug!("ON");
+                        in_roll_call = true;
+                    }
+                } else {
+                    if remote.mark_itself().is_ok() {
+                        debug!("OFF");
+                        in_roll_call = false;
+                    }
+                }
+            }
+            Action::MarkItself => {
+                if in_roll_call {
+                    if remote.mark_itself().is_ok() {
+                        debug!("OFF");
+                        in_roll_call = false;
+                    }
+                } else {
+                    debug!("SKIP");
+                }
+            }
+        }
+    }
+    Ok(())
+}
