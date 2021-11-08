@@ -1,4 +1,4 @@
-syntax := "proto3"
+syntax = "proto3";
 
 option java_multiple_files = true;
 option java_package = "rust.microservice.ring";
@@ -9,7 +9,7 @@ package ringproto;
 
 message Empty { }
 
-service Ring package {
+service Ring {
     rpc StartRollCall (Empty) returns (Empty);
     rpc MarkItself (Empty) returns (Empty);
 }
