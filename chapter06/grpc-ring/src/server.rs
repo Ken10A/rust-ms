@@ -74,7 +74,7 @@ fn main() -> Result<(), Error> {
     worker_pool(rx)
 }
 
-fn worker_pool(receiver: Receiver<Action>) {
+fn worker_pool(receiver: Receiver<Action>) -> Result<(), Error> {
     let next = env::var("NEXT")?.parse()?;
     let remote = Remote::new(next)?;
     let mut in_roll_call = false;
