@@ -36,5 +36,14 @@ fn start_worker() -> mpsc::Sender<WorkerRequest> {
 
 
 fn main() {
-    println!("Hello, world!");
+    let addr = ([127, 0, 0, 1], 8080).into();
+    let builder = Server::bind(&addr);
+    let tx = start_worker();
+    let server = builder.serve(|| {
+        let tx = tx.clone();
+        service_fn(move |req| {
+            microservice_handler(tx.clone(), req))
+    });
+    let server = server.map_err(drop);
+    hyper::rt::run(server);
 }
