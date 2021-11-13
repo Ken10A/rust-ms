@@ -33,6 +33,14 @@ fn start_worker() -> mpsc::Sender<WorkerRequest> {
     tx 
 }
 
+fn convert(data: Vec<u8>, width: u16, height: u16) -> ImageResult<Vec<u8>> {
+    let format = image::guess_format(&data)?;
+    let img = image::load_from_memory(&data)?;
+    let scaled = img.resize(width as u32, height as u32, FilterType::Lanczos3);
+    let mut result = Vec::new();
+    scaled.write_to(&mut result, format)?;
+    Ok(result);
+}
 
 
 fn main() {
