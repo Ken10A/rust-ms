@@ -42,6 +42,26 @@ fn convert(data: Vec<u8>, width: u16, height: u16) -> ImageResult<Vec<u8>> {
     Ok(result);
 }
 
+fn other<E>(err: E) -> Error
+where E: Into<Box<dyn std::error::Error + Send + Sync>>,
+{
+    Error::new(ErrorKind::Other, err)
+}
+
+fn to_number(value: &Value, default: u16) -> u16 {
+    value.as_str()
+        .and_then(|s| s.parse::<u16>().ok())
+        .unwrap_or(default)
+}
+
+fn response_with_code(status_code: StatusCode) -> Box<Future<Item=Response<Body>, Error=Error> + Send> {
+    let resp = Response::builder()
+        .status(status_code)
+        .body(Body::empty())
+        .unwrap();
+    Box::new(future::ok(resp))
+}
+
 
 fn main() {
     let addr = ([127, 0, 0, 1], 8080).into();
